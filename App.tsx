@@ -1,6 +1,8 @@
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Event, Pattern, Day, InteractionState } from './types';
-import { DAYS_OF_WEEK, START_HOUR, PIXELS_PER_MINUTE, PATTERN_COLORS, SNAP_THRESHOLD_PIXELS } from './constants';
+// Fix: Import END_HOUR and PIXELS_PER_HOUR from constants to resolve reference errors.
+import { DAYS_OF_WEEK, START_HOUR, PIXELS_PER_MINUTE, PATTERN_COLORS, SNAP_THRESHOLD_PIXELS, END_HOUR, PIXELS_PER_HOUR } from './constants';
 import { loadEvents, saveEvents, loadPatterns, savePatterns } from './services/storageService';
 import { Timeline } from './components/Timeline';
 import Canvas from './components/Canvas';
@@ -27,7 +29,7 @@ function App() {
   const [isNewPatternModalOpen, setNewPatternModalOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-  const schedulerRef = useRef<HTMLDivElement>(null);
+  const schedulerAreaRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ function App() {
   }, [patterns]);
   
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!interaction || !schedulerRef.current) return;
+    if (!interaction || !schedulerAreaRef.current) return;
   
     const deltaY = e.clientY - interaction.initialY;
     const deltaMinutes = pixelsToMinutes(deltaY);
@@ -69,7 +71,6 @@ function App() {
           newDuration = interaction.initialDuration - deltaMinutes;
         }
 
-        // Snapping logic
         const snapThresholdMinutes = pixelsToMinutes(SNAP_THRESHOLD_PIXELS);
         let activeSnapTime: number | null = null;
         
@@ -92,13 +93,12 @@ function App() {
         }
         setSnappedTime(activeSnapTime);
 
-        // Constraints
         newStartTime = Math.max(newStartTime, START_HOUR * 60);
         const maxTime = (24 * 60) - 5;
         if (newStartTime + newDuration > maxTime) {
             newDuration = maxTime - newStartTime;
         }
-        newDuration = Math.max(newDuration, 5); // min duration 5 minutes
+        newDuration = Math.max(newDuration, 5);
 
         return { ...event, startTime: Math.round(newStartTime), duration: Math.round(newDuration) };
       }
@@ -148,12 +148,10 @@ function App() {
     const minutesFromStart = pixelsToMinutes(y);
     const startTime = Math.round(START_HOUR * 60 + minutesFromStart);
     
-    // Snap to nearest 5 minutes on drop
     const snappedStartTime = Math.round(startTime / 5) * 5;
 
-    const colorIndex = Math.floor(Math.random() * PATTERN_COLORS.length);
+    const colorIndex = events.length % PATTERN_COLORS.length;
     const colorClasses = PATTERN_COLORS[colorIndex];
-
 
     const newEvent: Event = {
       id: `evt_${Date.now()}`,
@@ -171,9 +169,9 @@ function App() {
   };
 
   const handleSchedulerMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!scrollContainerRef.current) return;
-    const rect = scrollContainerRef.current.getBoundingClientRect();
-    const y = e.clientY - rect.top + scrollContainerRef.current.scrollTop;
+    if (!schedulerAreaRef.current) return;
+    const rect = schedulerAreaRef.current.getBoundingClientRect();
+    const y = e.clientY - rect.top + (scrollContainerRef.current?.scrollTop || 0);
     const minutes = START_HOUR * 60 + pixelsToMinutes(y);
     setCursorTime(minutes);
   };
@@ -236,13 +234,13 @@ function App() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col">
             <label htmlFor="start-time" className="mb-1 text-slate-600 dark:text-slate-300">Start Time</label>
-            <input type="text" id="start-time" value={start} onChange={e => setStart(e.target.value)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., 9:00 AM" />
+            <input type="text" id="start-time" value={start} onChange={e => setStart(e.target.value)} className="p-3 text-lg rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., 9:00 AM" />
           </div>
           <div className="flex flex-col">
             <label htmlFor="end-time" className="mb-1 text-slate-600 dark:text-slate-300">End Time</label>
-            <input type="text" id="end-time" value={end} onChange={e => setEnd(e.target.value)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., 10:30 AM" />
+            <input type="text" id="end-time" value={end} onChange={e => setEnd(e.target.value)} className="p-3 text-lg rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., 10:30 AM" />
           </div>
-          <button type="submit" className="w-full bg-violet-600 text-white font-bold py-3 rounded-lg hover:bg-violet-700 transition-colors">Save Changes</button>
+          <button type="submit" className="w-full bg-violet-600 text-white font-bold py-3 text-lg rounded-lg hover:bg-violet-700 transition-colors">Save Changes</button>
         </form>
       </Modal>
     );
@@ -268,13 +266,13 @@ function App() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="flex flex-col">
             <label htmlFor="pattern-name" className="mb-1 text-slate-600 dark:text-slate-300">Pattern Name</label>
-            <input type="text" id="pattern-name" value={name} onChange={e => setName(e.target.value)} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., Study Session" />
+            <input type="text" id="pattern-name" value={name} onChange={e => setName(e.target.value)} className="p-3 text-lg rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" placeholder="e.g., Study Session" />
           </div>
            <div className="flex flex-col">
             <label htmlFor="pattern-duration" className="mb-1 text-slate-600 dark:text-slate-300">Default Duration (minutes)</label>
-            <input type="number" id="pattern-duration" value={duration} onChange={e => setDuration(parseInt(e.target.value))} className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" />
+            <input type="number" id="pattern-duration" value={duration} onChange={e => setDuration(parseInt(e.target.value))} className="p-3 text-lg rounded-lg bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-violet-500 outline-none" />
           </div>
-          <button type="submit" className="w-full bg-violet-600 text-white font-bold py-3 rounded-lg hover:bg-violet-700 transition-colors">Create Pattern</button>
+          <button type="submit" className="w-full bg-violet-600 text-white font-bold py-3 text-lg rounded-lg hover:bg-violet-700 transition-colors">Create Pattern</button>
         </form>
       </Modal>
     );
@@ -283,13 +281,13 @@ function App() {
   return (
     <div className="h-screen w-screen flex flex-col font-sans text-slate-900 dark:text-slate-50 bg-slate-100 dark:bg-slate-900 overflow-hidden">
       <header className="p-4 border-b border-slate-200 dark:border-slate-800 bg-white/30 dark:bg-slate-950/30 backdrop-blur-sm z-20">
-        <h1 className="text-4xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 py-1">Dynamic Schedule</h1>
+        <h1 className="text-5xl font-extrabold text-center bg-clip-text text-transparent bg-gradient-to-r from-violet-500 to-fuchsia-500 py-1">Dynamic Schedule</h1>
         <div className="flex justify-center mt-4 space-x-2">
             {DAYS_OF_WEEK.map(day => (
                 <button 
                     key={day} 
                     onClick={() => setActiveDay(day)}
-                    className={`px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ${activeDay === day ? 'bg-violet-600 text-white shadow-lg scale-110' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 hover:scale-105'}`}
+                    className={`px-5 py-2.5 rounded-full text-lg font-semibold transition-all duration-300 ${activeDay === day ? 'bg-violet-600 text-white shadow-lg scale-110' : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 hover:scale-105'}`}
                 >
                     {day}
                 </button>
@@ -297,16 +295,19 @@ function App() {
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        <div ref={schedulerRef} className="flex flex-1">
+      <main className="flex-1 flex overflow-hidden">
+        <div 
+          ref={schedulerAreaRef} 
+          className="flex flex-1 relative"
+          onMouseMove={handleSchedulerMouseMove} 
+          onMouseLeave={handleSchedulerMouseLeave}
+        >
             <Timeline />
             <div 
               ref={scrollContainerRef}
               className="flex-1 overflow-y-auto"
-              onMouseMove={handleSchedulerMouseMove} 
-              onMouseLeave={handleSchedulerMouseLeave}
             >
-                <div className="relative" style={{height: `${(21-7) * 120 + 60}px`}}>
+                <div className="relative" style={{height: `${(END_HOUR-START_HOUR) * PIXELS_PER_HOUR + 60}px`}}>
                     <Canvas 
                       activeDay={activeDay} 
                       events={events}
@@ -316,25 +317,29 @@ function App() {
                       onDrop={handleDrop}
                       onDragOver={handleDragOver}
                     />
-                    {cursorTime !== null && (
-                      <div 
-                        className="absolute left-0 right-0 h-px bg-violet-500/50 flex items-center pointer-events-none z-10" 
-                        style={{ transform: `translateY(${minutesToPixels(cursorTime - START_HOUR * 60)}px)` }}
-                      >
-                        <span 
-                          className="absolute bg-violet-600 text-white text-xs font-semibold px-2 py-1 rounded-full shadow-lg"
-                          style={{
-                            left: '-2.5rem',
-                            top: '50%',
-                            transform: 'translate(-50%, -50%)',
-                          }}
-                        >
-                          {formatTime(Math.round(cursorTime / 5) * 5)}
-                        </span>
-                      </div>
-                    )}
                 </div>
             </div>
+             {/* Cursor Following Indicator - Rearchitected for performance and accuracy */}
+            {cursorTime !== null && (
+              <div 
+                className="absolute top-0 left-0 w-full h-full pointer-events-none z-10" 
+                style={{ transform: `translateY(${minutesToPixels(cursorTime - START_HOUR * 60) - (scrollContainerRef.current?.scrollTop || 0)}px)` }}
+              >
+                  {/* Time Bubble */}
+                  <span 
+                      className="absolute bg-violet-600 text-white text-sm font-bold px-3 py-1.5 rounded-full shadow-lg"
+                      style={{
+                        left: '4rem',
+                        top: '0',
+                        transform: 'translate(-50%, -50%)',
+                      }}
+                    >
+                      {formatTime(Math.round(cursorTime / 5) * 5)}
+                  </span>
+                  {/* Horizontal Line */}
+                  <div className="absolute left-[6rem] right-0 top-0 h-px bg-violet-500/80"></div>
+              </div>
+            )}
         </div>
       </main>
 

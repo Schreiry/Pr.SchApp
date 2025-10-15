@@ -1,4 +1,3 @@
-
 import { Day } from './types';
 
 export const DAYS_OF_WEEK: Day[] = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
@@ -12,21 +11,22 @@ export const PIXELS_PER_MINUTE = PIXELS_PER_HOUR / 60;
 
 export const SNAP_THRESHOLD_PIXELS = 8;
 
+// Glassmorphism color palette
 export const PATTERN_COLORS = [
-    'bg-rose-200', 'border-rose-300', 'text-rose-800',
-    'bg-pink-200', 'border-pink-300', 'text-pink-800',
-    'bg-fuchsia-200', 'border-fuchsia-300', 'text-fuchsia-800',
-    'bg-purple-200', 'border-purple-300', 'text-purple-800',
-    'bg-violet-200', 'border-violet-300', 'text-violet-800',
-    'bg-indigo-200', 'border-indigo-300', 'text-indigo-800',
-    'bg-blue-200', 'border-blue-300', 'text-blue-800',
-    'bg-sky-200', 'border-sky-300', 'text-sky-800',
-    'bg-cyan-200', 'border-cyan-300', 'text-cyan-800',
-    'bg-teal-200', 'border-teal-300', 'text-teal-800',
-    'bg-emerald-200', 'border-emerald-300', 'text-emerald-800',
-    'bg-green-200', 'border-green-300', 'text-green-800',
-    'bg-lime-200', 'border-lime-300', 'text-lime-800',
-    'bg-yellow-200', 'border-yellow-300', 'text-yellow-800',
-    'bg-amber-200', 'border-amber-300', 'text-amber-800',
-    'bg-orange-200', 'border-orange-300', 'text-orange-800',
+    'bg-rose-500/10 border border-rose-500/20 backdrop-blur-lg text-rose-100',
+    'bg-pink-500/10 border border-pink-500/20 backdrop-blur-lg text-pink-100',
+    'bg-fuchsia-500/10 border border-fuchsia-500/20 backdrop-blur-lg text-fuchsia-100',
+    'bg-purple-500/10 border border-purple-500/20 backdrop-blur-lg text-purple-100',
+    'bg-violet-500/10 border border-violet-500/20 backdrop-blur-lg text-violet-100',
+    'bg-indigo-500/10 border border-indigo-500/20 backdrop-blur-lg text-indigo-100',
+    'bg-blue-500/10 border border-blue-500/20 backdrop-blur-lg text-blue-100',
+    'bg-sky-500/10 border border-sky-500/20 backdrop-blur-lg text-sky-100',
+    'bg-cyan-500/10 border border-cyan-500/20 backdrop-blur-lg text-cyan-100',
+    'bg-teal-500/10 border border-teal-500/20 backdrop-blur-lg text-teal-100',
+    'bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-lg text-emerald-100',
+    'bg-green-500/10 border border-green-500/20 backdrop-blur-lg text-green-100',
+    'bg-lime-500/10 border border-lime-500/20 backdrop-blur-lg text-lime-100',
+    'bg-yellow-500/10 border border-yellow-500/20 backdrop-blur-lg text-yellow-100',
+    'bg-amber-500/10 border border-amber-500/20 backdrop-blur-lg text-amber-100',
+    'bg-orange-500/10 border border-orange-500/20 backdrop-blur-lg text-orange-100',
 ];
