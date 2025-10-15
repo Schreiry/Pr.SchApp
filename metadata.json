@@ -1,0 +1,5 @@
+{
+  "name": "Dynamic Schedule",
+  "description": "An interactive scheduler application for visual time management, featuring drag-and-drop functionality, a hybrid Material 3 and Fluent Design aesthetic, and a calming, productivity-focused user experience.",
+  "requestFramePermissions": []
+}
